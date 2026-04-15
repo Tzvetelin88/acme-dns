@@ -14,6 +14,7 @@ type AcmednsDB interface {
 	GetBackend() *sql.DB
 	SetBackend(*sql.DB)
 	Close()
+	CountRegistrations() (int64, error)
 }
 
 type AcmednsNS interface {

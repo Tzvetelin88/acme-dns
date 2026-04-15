@@ -348,6 +348,14 @@ func (d *acmednsdb) getModelFromRow(r *sql.Rows) (acmedns.ACMETxt, error) {
 	return txt, err
 }
 
+func (d *acmednsdb) CountRegistrations() (int64, error) {
+	d.Mutex.Lock()
+	defer d.Mutex.Unlock()
+	var count int64
+	err := d.DB.QueryRow("SELECT COUNT(*) FROM records").Scan(&count)
+	return count, err
+}
+
 func (d *acmednsdb) Close() {
 	d.DB.Close()
 }

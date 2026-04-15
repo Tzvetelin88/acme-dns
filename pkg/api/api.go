@@ -29,6 +29,16 @@ func Init(config *acmedns.AcmeDnsConfig, db acmedns.AcmednsDB, logger *zap.Sugar
 
 func (a *AcmednsAPI) Start(dnsservers []acmedns.AcmednsNS) {
 	var err error
+
+	// Seed the registeredAccounts gauge from the database so it survives pod restarts
+	// This is done in Start() rather than Init() to avoid database mutex deadlocks during initialization
+	if count, err := a.DB.CountRegistrations(); err == nil {
+		registeredAccounts.Set(float64(count))
+		a.Logger.Debugw("Seeded registeredAccounts gauge from database", "count", count)
+	} else {
+		a.Logger.Warnw("Failed to seed registeredAccounts gauge", "error", err.Error())
+	}
+
 	//TODO: do we want to debug log the HTTP server?
 	stderrorlog, err := zap.NewStdLogAt(a.Logger.Desugar(), zap.ErrorLevel)
 	if err != nil {
